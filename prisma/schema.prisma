@@ -1,0 +1,88 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+
+model User{
+  id     String    @id @default(uuid())
+  fullName   String
+  phone     String @unique
+  email     String @unique
+  photoUrl     String?
+  password     String
+
+  @@map("users")
+}
+
+
+model Product {
+  id            String     @id @default(uuid())
+  name          String     @unique
+  category      String     // "MOL_GO'SHTI", "TOVUQ", "TUXUM" va h.k.
+  tannarx       Decimal    @db.Decimal(12, 2) // narx 1 kg uchun
+  sotish        Decimal    @db.Decimal(12, 2) // sotish narxi 1 kg uchun
+  stockKg       Decimal    @db.Decimal(10, 3) @default(0)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  saleItems     SaleItem[]
+
+  @@map("products")
+}
+
+model Sale {
+  id              String         @id @default(uuid())
+  totalAmount     Decimal        @db.Decimal(12, 2)
+  paymentMethod   PaymentMethod
+  createdAt       DateTime       @default(now())
+
+  // Agar NASIYA bo'lsa
+  customerId      String?
+  customer        Customer?      @relation(fields: [customerId], references: [id])
+
+  items           SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id            String   @id @default(uuid())
+  saleId        String
+  productId     String
+  quantityKg    Decimal  @db.Decimal(10, 3)
+  pricePerKg    Decimal  @db.Decimal(12, 2)   // sotuv vaqtida sotish narxi
+  costPerKg     Decimal  @db.Decimal(12, 2)   // sotuv vaqtida tannarx (profit uchun)
+
+  sale          Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
+
+model Customer {
+  id            String    @id @default(uuid())
+  name          String
+  phone         String?
+  totalDebt     Decimal   @db.Decimal(12, 2) @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sales         Sale[]
+
+  @@map("customers")
+}
+
+enum PaymentMethod {
+  NAQD
+  KARTA
+  NASIYA
+}
