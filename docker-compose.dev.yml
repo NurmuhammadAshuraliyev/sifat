@@ -1,0 +1,43 @@
+name: my_compose_container
+
+services:
+  nest-app:
+    build:
+      context: .
+    command: ['sh', '-c', 'npx prisma db push && yarn build && yarn start:prod']
+    environment:
+      - JWT_KEY=${JWT_KEY}
+      - DATABASE_URL=${DATABASE_DOCKER_URL}
+      - SUPERADMIN_EMAIL=${SUPERADMIN_EMAIL}
+      - SUPERADMIN_PASSWORD=${SUPERADMIN_PASSWORD}
+      - SUPERADMIN_NAME=${SUPERADMIN_NAME}
+    env_file:
+      - .env
+    ports:
+      - '8080:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17.5
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_DB}
+    env_file:
+      - .env
+    ports:
+      - '5433:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pg_data:
