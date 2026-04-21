@@ -8,8 +8,10 @@ RUN yarn install --frozen-lockfile && yarn cache clean
 
 COPY . .
 
-RUN npx prisma generate 
+RUN npx prisma generate
+
+RUN yarn build
 
 EXPOSE 4000
 
-RUN yarn build
+CMD ["node", "dist/main.js"]
