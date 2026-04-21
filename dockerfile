@@ -2,20 +2,23 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Package'larni o'rnatish
+# Dependencies
 COPY package*.json yarn.lock ./
 RUN yarn install --frozen-lockfile && yarn cache clean
 
-# Barcha kodni copy qilish
+# Barcha kodni nusxa ko'chirish
 COPY . .
 
-# Prisma client generatsiya qilish
+# Prisma generatsiya
 RUN npx prisma generate
 
-# Build qilish
+# Build (dist papkasi yaratiladi)
 RUN yarn build
+
+# Debug uchun: dist papkasi borligini tekshirish
+RUN ls -la dist
 
 EXPOSE 4000
 
-# Productionda ishga tushirish (to'g'ri yo'l)
-CMD ["sh", "-c", "npx prisma db push && node dist/main.js"]
+# Eng to'g'ri va ishonchli ishga tushirish
+CMD ["node", "dist/main.js"]

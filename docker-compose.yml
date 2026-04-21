@@ -41,14 +41,12 @@
 
 # volumes:
 #   pg_data:
-
 name: my_compose_container
 
 services:
   nest-app:
     build:
       context: .
-    # Command ni Dockerfile ga o'tkazdik, shuning uchun bu yerdan olib tashlaymiz
     env_file:
       - .env
     environment:
