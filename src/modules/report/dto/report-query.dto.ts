@@ -1,4 +1,5 @@
-import { IsOptional, IsEnum, IsString } from 'class-validator';
+import { IsOptional, IsEnum } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ReportPeriod {
   BUGUN = 'bugun',
@@ -10,6 +11,11 @@ export enum ReportPeriod {
 }
 
 export class ReportQueryDto {
+  @ApiPropertyOptional({
+    enum: ReportPeriod,
+    default: ReportPeriod.BUGUN,
+    description: 'Hisobot davri',
+  })
   @IsOptional()
   @IsEnum(ReportPeriod, { message: 'Noto‘g‘ri period tanlandi' })
   period?: ReportPeriod = ReportPeriod.BUGUN;
