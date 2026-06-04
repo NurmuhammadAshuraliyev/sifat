@@ -1,83 +1,3 @@
-// import {
-//   Controller,
-//   Get,
-//   Post,
-//   Patch,
-//   Delete,
-//   Body,
-//   Param,
-//   Query,
-// } from '@nestjs/common';
-// import { NasiyaService } from './nasiya.service';
-// import {
-//   CreateNasiyaDto,
-//   UpdateNasiyaDto,
-//   QarzToMashDto,
-// } from './dto/nasiya.dto';
-
-// @Controller('nasiya')
-// export class NasiyaController {
-//   constructor(private readonly nasiyaService: NasiyaService) {}
-
-//   /**
-//    * GET /nasiya
-//    * GET /nasiya?search=ism_yoki_telefon
-//    * Rasm 2 - Barcha nasiya mijozlar ro'yxati + jami qarz
-//    */
-//   @Get()
-//   getAllNasiyalar(@Query('search') search?: string) {
-//     return this.nasiyaService.getAllNasiyalar(search);
-//   }
-
-//   /**
-//    * GET /nasiya/:id
-//    * Bitta mijozning barcha qarz tarixi
-//    */
-//   @Get(':id')
-//   getNasiyaById(@Param('id') id: string) {
-//     return this.nasiyaService.getNasiyaById(id);
-//   }
-
-//   /**
-//    * POST /nasiya
-//    * Yangi qarz qo'shish (YANGI QARZ tugmasi - rasm 2)
-//    * Body: { mijozIsmi, telefon?, qarzSumma }
-//    */
-//   @Post()
-//   createNasiya(@Body() dto: CreateNasiyaDto) {
-//     return this.nasiyaService.createNasiya(dto);
-//   }
-
-//   /**
-//    * PATCH /nasiya/:id
-//    * Mijoz ma'lumotlarini yangilash
-//    * Body: { mijozIsmi?, telefon?, totalDebt? }
-//    */
-//   @Patch(':id')
-//   updateNasiya(@Param('id') id: string, @Body() dto: UpdateNasiyaDto) {
-//     return this.nasiyaService.updateNasiya(id, dto);
-//   }
-
-//   /**
-//    * PATCH /nasiya/:id/tomash
-//    * Qarzni to'lash (qisman yoki to'liq)
-//    * Body: { toMashSumma, izoh? }
-//    */
-//   @Patch(':id/tomash')
-//   qarzToMash(@Param('id') id: string, @Body() dto: QarzToMashDto) {
-//     return this.nasiyaService.qarzToMash(id, dto);
-//   }
-
-//   /**
-//    * DELETE /nasiya/:id
-//    * Nasiya mijozni o'chirish (faqat qarz = 0 bo'lsa)
-//    */
-//   @Delete(':id')
-//   deleteNasiya(@Param('id') id: string) {
-//     return this.nasiyaService.deleteNasiya(id);
-//   }
-// }
-
 import {
   Controller,
   Get,
@@ -88,6 +8,14 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiParam,
+  ApiBody,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { NasiyaService } from './nasiya.service';
 import {
   CreateNasiyaDto,
@@ -98,63 +26,112 @@ import {
   UpdateCustomerDto,
 } from './dto/nasiya.dto';
 
+@ApiTags('Nasiya')
 @Controller('nasiya')
 export class NasiyaController {
   constructor(private readonly nasiyaService: NasiyaService) {}
 
-  // ─────────────────────────────────
-  // CUSTOMER (MIJOZ) ENDPOINTLARI
-  // ─────────────────────────────────
+  // =========================
+  // CUSTOMER ENDPOINTLARI
+  // =========================
 
-  /**
-   * GET /nasiya/customers
-   * GET /nasiya/customers?search=Ali
-   * Barcha mijozlar + ularning jami qarzlari
-   */
   @Get('customers')
+  @ApiOperation({
+    summary: 'Barcha mijozlar ro‘yxati',
+    description: 'Mijozlar va ularning jami qarzlarini qaytaradi',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    example: 'Ali',
+    description: 'Ism yoki telefon bo‘yicha qidiruv',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Mijozlar ro'yxati muvaffaqiyatli qaytarildi",
+  })
   getAllCustomers(@Query('search') search?: string) {
     return this.nasiyaService.getAllCustomers(search);
   }
 
-  /**
-   * POST /nasiya/customers
-   * Yangi mijoz yaratish (qarsiz)
-   * Body: { name, telefon? }
-   */
   @Post('customers')
+  @ApiOperation({
+    summary: 'Yangi mijoz yaratish',
+  })
+  @ApiBody({
+    type: CreateCustomerDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Mijoz muvaffaqiyatli yaratildi',
+  })
   createCustomer(@Body() dto: CreateCustomerDto) {
     return this.nasiyaService.createCustomer(dto);
   }
 
-  /**
-   * PATCH /nasiya/customers/:id
-   * Mijoz ism/telefonini yangilash
-   */
   @Patch('customers/:id')
+  @ApiOperation({
+    summary: "Mijoz ma'lumotlarini yangilash",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Mijoz ID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiBody({
+    type: UpdateCustomerDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Mijoz muvaffaqiyatli yangilandi',
+  })
   updateCustomer(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
     return this.nasiyaService.updateCustomer(id, dto);
   }
 
-  /**
-   * DELETE /nasiya/customers/:id
-   * Mijozni o'chirish (faqat qarz = 0 bo'lsa)
-   */
   @Delete('customers/:id')
+  @ApiOperation({
+    summary: "Mijozni o'chirish",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Mijoz ID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Mijoz muvaffaqiyatli o'chirildi",
+  })
   deleteCustomer(@Param('id') id: string) {
     return this.nasiyaService.deleteCustomer(id);
   }
 
-  // ─────────────────────────────────
+  // =========================
   // NASIYA ENDPOINTLARI
-  // ─────────────────────────────────
+  // =========================
 
-  /**
-   * GET /nasiya
-   * GET /nasiya?search=Ali
-   * GET /nasiya?status=active|closed|all
-   * Barcha nasiyalar ro'yxati (default: faqat faollar)
-   */
   @Get()
+  @ApiOperation({
+    summary: 'Barcha nasiyalar ro‘yxati',
+    description:
+      'Default holatda active nasiyalar qaytadi. Search va status bo‘yicha filterlash mumkin.',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    example: 'Ali',
+    description: 'Mijoz ismi yoki telefon raqami',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['active', 'closed', 'all'],
+    example: 'active',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Nasiyalar ro'yxati muvaffaqiyatli qaytarildi",
+  })
   getAllNasiyalar(
     @Query('search') search?: string,
     @Query('status') status?: 'active' | 'closed' | 'all',
@@ -162,68 +139,125 @@ export class NasiyaController {
     return this.nasiyaService.getAllNasiyalar(search, status);
   }
 
-  /**
-   * GET /nasiya/customer/:customerId
-   * Bitta mijozning barcha nasiyalari
-   */
   @Get('customer/:customerId')
+  @ApiOperation({
+    summary: 'Mijozning barcha nasiyalarini olish',
+  })
+  @ApiParam({
+    name: 'customerId',
+    description: 'Mijoz ID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Mijozning nasiyalari qaytarildi',
+  })
   getNasiyalarByCustomer(@Param('customerId') customerId: string) {
     return this.nasiyaService.getNasiyalarByCustomer(customerId);
   }
 
-  /**
-   * GET /nasiya/:id
-   * Bitta nasiya — to'liq ma'lumot + to'lov tarixi
-   */
   @Get(':id')
+  @ApiOperation({
+    summary: "Bitta nasiya ma'lumotlari",
+    description: "Nasiya va uning to'lov tarixini qaytaradi",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Nasiya ID',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Nasiya ma'lumotlari qaytarildi",
+  })
   getNasiyaById(@Param('id') id: string) {
     return this.nasiyaService.getNasiyaById(id);
   }
 
-  /**
-   * POST /nasiya
-   * Mavjud mijozga yangi qarz ochish
-   * Body: { customerId, aslSumma, izoh?, saleId? }
-   */
   @Post()
+  @ApiOperation({
+    summary: 'Mavjud mijozga yangi qarz ochish',
+  })
+  @ApiBody({
+    type: CreateNasiyaDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Nasiya muvaffaqiyatli yaratildi',
+  })
   createNasiya(@Body() dto: CreateNasiyaDto) {
     return this.nasiyaService.createNasiya(dto);
   }
 
-  /**
-   * POST /nasiya/mijoz
-   * Yangi mijoz + qarz bir vaqtda (YANGI QARZ tugmasi uchun)
-   * Body: { mijozIsmi, telefon?, aslSumma, izoh? }
-   */
   @Post('mijoz')
+  @ApiOperation({
+    summary: 'Yangi mijoz va nasiya yaratish',
+  })
+  @ApiBody({
+    type: CreateMijozVaNasiyaDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Mijoz va nasiya muvaffaqiyatli yaratildi',
+  })
   createMijozVaNasiya(@Body() dto: CreateMijozVaNasiyaDto) {
     return this.nasiyaService.createMijozVaNasiya(dto);
   }
 
-  /**
-   * PATCH /nasiya/:id
-   * Nasiya izohini yangilash
-   */
   @Patch(':id')
+  @ApiOperation({
+    summary: 'Nasiya izohini yangilash',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Nasiya ID',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @ApiBody({
+    type: UpdateNasiyaDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Nasiya muvaffaqiyatli yangilandi',
+  })
   updateNasiya(@Param('id') id: string, @Body() dto: UpdateNasiyaDto) {
     return this.nasiyaService.updateNasiya(id, dto);
   }
 
-  /**
-   * POST /nasiya/:id/tolov
-   * Qarzni to'lash — to'lov tarixi saqlanadi
-   * Body: { summa, izoh? }
-   */
   @Post(':id/tolov')
+  @ApiOperation({
+    summary: "Qarz to'lash",
+    description: "Qisman yoki to'liq qarz to'lovi",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Nasiya ID',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @ApiBody({
+    type: QarzTolovDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: "To'lov muvaffaqiyatli amalga oshirildi",
+  })
   qarzTolov(@Param('id') id: string, @Body() dto: QarzTolovDto) {
     return this.nasiyaService.qarzTolov(id, dto);
   }
 
-  /**
-   * DELETE /nasiya/:id
-   * Nasiyani o'chirish (faqat CLOSED yoki qolganQarz = 0)
-   */
   @Delete(':id')
+  @ApiOperation({
+    summary: "Nasiyani o'chirish",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Nasiya ID',
+    example: '550e8400-e29b-41d4-a716-446655440001',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Nasiya muvaffaqiyatli o'chirildi",
+  })
   deleteNasiya(@Param('id') id: string) {
     return this.nasiyaService.deleteNasiya(id);
   }

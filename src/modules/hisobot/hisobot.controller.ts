@@ -1,6 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HisobotService } from './hisobot.service';
 
+@ApiTags('Hisobot')
 @Controller('hisobot')
 export class HisobotController {
   constructor(private readonly hisobotService: HisobotService) {}
@@ -17,6 +19,22 @@ export class HisobotController {
    *   - Undirilgan qarzlar ro'yxati
    */
   @Get()
+  @ApiOperation({
+    summary: 'Hisobotlar sahifasi maʼlumotlarini olish',
+    description:
+      "Umumiy savdo, sof foyda, undirilgan qarzlar, savdo tarixi va undirilgan qarzlar ro'yxatini qaytaradi.",
+  })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    example: 'kun',
+    enum: ['kun', 'hafta', 'oy', 'yil'],
+    description: 'Hisobot davri filtri',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Hisobot ma'lumotlari muvaffaqiyatli qaytarildi",
+  })
   getHisobot(@Query('filter') filter: string = 'kun') {
     return this.hisobotService.getHisobot(filter);
   }
@@ -27,6 +45,23 @@ export class HisobotController {
    * Eng ko'p sotilgan 10 ta mahsulot
    */
   @Get('top-mahsulotlar')
+  @ApiOperation({
+    summary: "Eng ko'p sotilgan 10 ta mahsulot",
+    description:
+      "Tanlangan davr bo'yicha eng ko'p sotilgan 10 ta mahsulot ro'yxatini qaytaradi.",
+  })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    example: 'kun',
+    enum: ['kun', 'hafta', 'oy', 'yil'],
+    description: 'Hisobot davri filtri',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      "Eng ko'p sotilgan mahsulotlar ro'yxati muvaffaqiyatli qaytarildi",
+  })
   getTopMahsulotlar(@Query('filter') filter: string = 'kun') {
     return this.hisobotService.getTopMahsulotlar(filter);
   }
