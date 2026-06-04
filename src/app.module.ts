@@ -17,7 +17,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { HisobotModule } from './modules/hisobot/hisobot.module';
 import { KassaModule } from './modules/kassa/kassa.module';
 import { NasiyaModule } from './modules/nasiya/nasiya.module';
-// import { BackupModule } from './common/backup/backup.module';
+import { BackupModule } from './common/backup/backup.module';
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { NasiyaModule } from './modules/nasiya/nasiya.module';
     HisobotModule,
     KassaModule,
     NasiyaModule,
-    // BackupModule,
+    BackupModule,
   ],
   controllers: [AppController],
   providers: [
