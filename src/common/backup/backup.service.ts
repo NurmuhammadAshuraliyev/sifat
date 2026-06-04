@@ -210,7 +210,6 @@ export class BackupService implements OnApplicationBootstrap {
   private readonly chatId: string;
   private readonly backupDir = path.join(process.cwd(), 'backups');
 
-  // PrismaService loyhadagi mavjud instance ni inject qilamiz
   constructor(private readonly db: PrismaService) {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     this.chatId = process.env.TELEGRAM_CHAT_ID || '';
