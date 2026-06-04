@@ -3,13 +3,34 @@ import {
   IsOptional,
   IsNumber,
   IsPositive,
+  IsUUID,
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+// POST /nasiya — Yangi qarz ochish
 export class CreateNasiyaDto {
+  @IsUUID()
+  customerId!: string; // Mijoz ID (avval Customer yaratilgan bo'lishi kerak)
+
+  @IsNumber()
+  @IsPositive()
+  @Type(() => Number)
+  aslSumma!: number; // Qarz summasi
+
+  @IsOptional()
   @IsString()
-  mijozIsmi: string;
+  izoh?: string;
+
+  @IsOptional()
+  @IsUUID()
+  saleId?: string; // Qaysi sotuvdan kelib chiqqan
+}
+
+// POST /nasiya/mijoz — Yangi mijoz + qarz bir vaqtda
+export class CreateMijozVaNasiyaDto {
+  @IsString()
+  mijozIsmi!: string;
 
   @IsOptional()
   @IsString()
@@ -18,36 +39,49 @@ export class CreateNasiyaDto {
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
-  qarzSumma: number;
+  aslSumma!: number;
 
   @IsOptional()
   @IsString()
   izoh?: string;
 }
 
+// PATCH /nasiya/:id — Nasiya izohini yangilash
 export class UpdateNasiyaDto {
   @IsOptional()
   @IsString()
-  mijozIsmi?: string;
-
-  @IsOptional()
-  @IsString()
-  telefon?: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Type(() => Number)
-  totalDebt?: number;
+  izoh?: string;
 }
 
-export class QarzToMashDto {
+// POST /nasiya/:id/tolov — Qarzni to'lash
+export class QarzTolovDto {
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
-  toMashSumma: number;
+  summa!: number; // To'lanayotgan summa
 
   @IsOptional()
   @IsString()
   izoh?: string;
+}
+
+// POST /customer — Yangi mijoz yaratish
+export class CreateCustomerDto {
+  @IsString()
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  telefon?: string;
+}
+
+// PATCH /customer/:id
+export class UpdateCustomerDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  telefon?: string;
 }

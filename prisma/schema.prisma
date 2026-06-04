@@ -1,3 +1,87 @@
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+// model User{
+//   id     String    @id @default(uuid())
+//   fullName   String
+//   phone     String @unique
+//   email     String @unique
+//   photoUrl     String?
+//   password     String
+
+//   @@map("users")
+// }
+
+// model Product {
+//   id            String     @id @default(uuid())
+//   name          String     @unique
+//   category      String     // "MOL_GO'SHTI", "TOVUQ", "TUXUM" va h.k.
+//   tannarx       Decimal    @db.Decimal(12, 2) // narx 1 kg uchun
+//   sotish        Decimal    @db.Decimal(12, 2) // sotish narxi 1 kg uchun
+//   stockKg       Decimal    @db.Decimal(10, 3) @default(0)
+
+//   createdAt     DateTime   @default(now())
+//   updatedAt     DateTime   @updatedAt
+
+//   saleItems     SaleItem[]
+
+//   @@map("products")
+// }
+
+// model Sale {
+//   id              String         @id @default(uuid())
+//   totalAmount     Decimal        @db.Decimal(12, 2)
+//   paymentMethod   PaymentMethod
+//   createdAt       DateTime       @default(now())
+
+//   // Agar NASIYA bo'lsa
+//   customerId      String?
+//   customer        Customer?      @relation(fields: [customerId], references: [id])
+
+//   items           SaleItem[]
+
+//   @@map("sales")
+// }
+
+// model SaleItem {
+//   id            String   @id @default(uuid())
+//   saleId        String
+//   productId     String
+//   quantityKg    Decimal  @db.Decimal(10, 3)
+//   pricePerKg    Decimal  @db.Decimal(12, 2)   // sotuv vaqtida sotish narxi
+//   costPerKg     Decimal  @db.Decimal(12, 2)   // sotuv vaqtida tannarx (profit uchun)
+
+//   sale          Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+//   product       Product  @relation(fields: [productId], references: [id])
+
+//   @@map("sale_items")
+// }
+
+// model Customer {
+//   id            String    @id @default(uuid())
+//   name          String
+//   phone         String?
+//   totalDebt     Decimal   @db.Decimal(12, 2) @default(0)
+
+//   createdAt     DateTime  @default(now())
+//   updatedAt     DateTime  @updatedAt
+
+//   sales         Sale[]
+
+//   @@map("customers")
+// }
+
+// enum PaymentMethod {
+//   NAQD
+//   KARTA
+//   NASIYA
+// }
 
 generator client {
   provider = "prisma-client-js"
@@ -8,82 +92,123 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
-
-model User{
-  id     String    @id @default(uuid())
-  fullName   String
-  phone     String @unique
-  email     String @unique
-  photoUrl     String?
-  password     String
+model User {
+  id       String  @id @default(uuid())
+  fullName String
+  phone    String  @unique
+  email    String  @unique
+  photoUrl String?
+  password String
 
   @@map("users")
 }
 
-
 model Product {
-  id            String     @id @default(uuid())
-  name          String     @unique
-  category      String     // "MOL_GO'SHTI", "TOVUQ", "TUXUM" va h.k.
-  tannarx       Decimal    @db.Decimal(12, 2) // narx 1 kg uchun
-  sotish        Decimal    @db.Decimal(12, 2) // sotish narxi 1 kg uchun
-  stockKg       Decimal    @db.Decimal(10, 3) @default(0)
+  id       String  @id @default(uuid())
+  name     String  @unique
+  category String
+  tannarx  Decimal @db.Decimal(12, 2)
+  sotish   Decimal @db.Decimal(12, 2)
+  stockKg  Decimal @default(0) @db.Decimal(10, 3)
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  saleItems     SaleItem[]
+  saleItems SaleItem[]
 
   @@map("products")
 }
 
 model Sale {
-  id              String         @id @default(uuid())
-  totalAmount     Decimal        @db.Decimal(12, 2)
-  paymentMethod   PaymentMethod
-  createdAt       DateTime       @default(now())
+  id            String        @id @default(uuid())
+  totalAmount   Decimal       @db.Decimal(12, 2)
+  paymentMethod PaymentMethod
+  createdAt     DateTime      @default(now())
 
-  // Agar NASIYA bo'lsa
-  customerId      String?
-  customer        Customer?      @relation(fields: [customerId], references: [id])
+  // Agar NASIYA bo'lsa — Customer va Nasiya ga bog'lanadi
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
 
-  items           SaleItem[]
+  nasiyaId String?
+  nasiya   Nasiya? @relation(fields: [nasiyaId], references: [id])
+
+  items SaleItem[]
 
   @@map("sales")
 }
 
 model SaleItem {
-  id            String   @id @default(uuid())
-  saleId        String
-  productId     String
-  quantityKg    Decimal  @db.Decimal(10, 3)
-  pricePerKg    Decimal  @db.Decimal(12, 2)   // sotuv vaqtida sotish narxi
-  costPerKg     Decimal  @db.Decimal(12, 2)   // sotuv vaqtida tannarx (profit uchun)
+  id         String  @id @default(uuid())
+  saleId     String
+  productId  String
+  quantityKg Decimal @db.Decimal(10, 3)
+  pricePerKg Decimal @db.Decimal(12, 2)
+  costPerKg  Decimal @db.Decimal(12, 2)
 
-  sale          Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product       Product  @relation(fields: [productId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
 
   @@map("sale_items")
 }
 
 model Customer {
-  id            String    @id @default(uuid())
-  name          String
-  phone         String?
-  totalDebt     Decimal   @db.Decimal(12, 2) @default(0)
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?  @unique
+  totalDebt Decimal  @default(0) @db.Decimal(12, 2) // Jami qolgan qarz (cache)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  sales         Sale[]
+  sales     Sale[]
+  nasiyalar Nasiya[]
 
   @@map("customers")
+}
+
+// Har bir qarz — alohida yozuv
+model Nasiya {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  saleId String? // Qaysi sotuvdan kelib chiqqan (ixtiyoriy)
+
+  aslSumma   Decimal @db.Decimal(12, 2) // Dastlabki qarz summasi
+  qolganQarz Decimal @db.Decimal(12, 2) // Hozirda qolgan qarz
+  izoh       String? // Qo'shimcha izoh
+
+  status NasiyaStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tolovlar NasiyaTolov[] // To'lov tarixi
+  sales    Sale[]
+
+  @@map("nasiyalar")
+}
+
+// Har bir to'lov — alohida yozuv (to'liq tarix)
+model NasiyaTolov {
+  id       String @id @default(uuid())
+  nasiyaId String
+  nasiya   Nasiya @relation(fields: [nasiyaId], references: [id], onDelete: Cascade)
+
+  summa Decimal @db.Decimal(12, 2) // To'langan summa
+  izoh  String? // To'lov izohi
+
+  createdAt DateTime @default(now())
+
+  @@map("nasiya_tolovlar")
 }
 
 enum PaymentMethod {
   NAQD
   KARTA
   NASIYA
+}
+
+enum NasiyaStatus {
+  ACTIVE // Qarz bor
+  CLOSED // Qarz to'liq to'landi
 }
