@@ -15,6 +15,7 @@ import {
   ApiParam,
   ApiBody,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { NasiyaService } from './nasiya.service';
 import {
@@ -27,6 +28,7 @@ import {
 } from './dto/nasiya.dto';
 
 @ApiTags('Nasiya')
+@ApiBearerAuth()
 @Controller('nasiya')
 export class NasiyaController {
   constructor(private readonly nasiyaService: NasiyaService) {}

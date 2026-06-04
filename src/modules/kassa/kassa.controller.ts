@@ -1,8 +1,15 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { KassaService } from './kassa.service';
 
 @ApiTags('Kassa')
+@ApiBearerAuth()
 @Controller('kassa')
 export class KassaController {
   constructor(private readonly kassaService: KassaService) {}

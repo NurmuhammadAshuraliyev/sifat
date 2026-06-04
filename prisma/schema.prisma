@@ -212,6 +212,18 @@ model Transaction {
   @@map("transactions")
 }
 
+model Backup {
+  id        String   @id @default(cuid())
+  filename  String
+  size      Int
+  status    String // success | failed
+  type      String // full | restore
+  createdAt DateTime @default(now())
+  checksum  String?
+
+  @@map("backups")
+}
+
 enum TransactionType {
   INCOME // Kirim
   EXPENSE // Chiqim

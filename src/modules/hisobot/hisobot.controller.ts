@@ -1,8 +1,15 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { HisobotService } from './hisobot.service';
 
 @ApiTags('Hisobot')
+@ApiBearerAuth()
 @Controller('hisobot')
 export class HisobotController {
   constructor(private readonly hisobotService: HisobotService) {}
