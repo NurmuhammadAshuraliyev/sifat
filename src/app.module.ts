@@ -13,6 +13,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './common/guard/auth.guard';
 import TransformIntersector from './common/intersector/transform.intersector.service';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { HisobotModule } from './modules/hisobot/hisobot.module';
+import { KassaModule } from './modules/kassa/kassa.module';
+import { NasiyaModule } from './modules/nasiya/nasiya.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import TransformIntersector from './common/intersector/transform.intersector.ser
     ReceiptModule,
     ProfileModule,
     AuthModule,
+    DashboardModule,
+    HisobotModule,
+    KassaModule,
+    NasiyaModule,
   ],
   controllers: [AppController],
   providers: [

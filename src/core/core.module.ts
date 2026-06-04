@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 import { SeederModule } from './database/seeders/seeder.module';
 import { StorageModule } from './storage/storage.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
