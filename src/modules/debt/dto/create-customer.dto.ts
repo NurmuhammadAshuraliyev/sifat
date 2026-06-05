@@ -14,7 +14,7 @@ export class CreateCustomerDto {
   })
   @IsNotEmpty({ message: 'Mijoz ismi kiritilishi shart' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({
     example: '+998901234567',

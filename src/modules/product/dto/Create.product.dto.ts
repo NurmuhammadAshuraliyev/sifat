@@ -9,7 +9,7 @@ export class CreateProductDto {
   })
   @IsNotEmpty()
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'Meva',
@@ -17,7 +17,7 @@ export class CreateProductDto {
   })
   @IsNotEmpty()
   @IsString()
-  category: string;
+  category!: string;
 
   @ApiProperty({
     example: 15000,
@@ -26,7 +26,7 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
-  tannarx: number;
+  tannarx!: number;
 
   @ApiProperty({
     example: 20000,
@@ -35,5 +35,5 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
-  sotish: number;
+  sotish!: number;
 }
