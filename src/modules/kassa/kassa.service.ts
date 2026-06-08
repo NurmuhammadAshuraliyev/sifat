@@ -144,28 +144,38 @@
 // }
 
 //////////////////
-
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PaymentMethod, TransactionType } from '@prisma/client';
+import { TransactionType } from '@prisma/client';
 import { PrismaService } from 'src/core/database/prisma.service';
-import {
-  CreateKassaHarakatDto,
-  AmalTuri,
-} from './dto/create-kassa-harakat.dto';
+
+// Frontend'dan kelayotgan barcha formatni qabul qiladi
+export class CreateKassaHarakatDto {
+  amalTuri?: string; // "KIRIM" | "CHIQIM"
+  type?: string; // "income" | "expense"
+  summa?: number; // backend nomi
+  amount?: number; // frontend nomi
+  izoh?: string; // backend nomi
+  description?: string; // frontend nomi
+  tolovTuri?: string;
+}
 
 @Injectable()
 export class KassaService {
   constructor(private db: PrismaService) {}
 
-  // ─── Date range helper ───────────────────────────────────────────────────────
+  private resolveType(dto: CreateKassaHarakatDto): TransactionType {
+    const raw = (dto.amalTuri || dto.type || '').toLowerCase();
+    if (raw === 'kirim' || raw === 'income') return TransactionType.INCOME;
+    if (raw === 'chiqim' || raw === 'expense') return TransactionType.EXPENSE;
+    return TransactionType.INCOME;
+  }
+
   private getDateRange(filter: string): { gte: Date; lt: Date } {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-
     if (filter === 'hafta') {
       const day = start.getDay();
-      const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-      start.setDate(diff);
+      start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
       const end = new Date(start);
       end.setDate(end.getDate() + 7);
       return { gte: start, lt: end };
@@ -182,34 +192,25 @@ export class KassaService {
       end.setFullYear(end.getFullYear() + 1);
       return { gte: start, lt: end };
     }
-    // Default: bugun
     const end = new Date(start);
     end.setDate(end.getDate() + 1);
     return { gte: start, lt: end };
   }
 
-  // ─── GET /kassa ──────────────────────────────────────────────────────────────
-  /**
-   * Umumiy qoldiq, jami kirim/chiqim, tarixiy harakatlar
-   * Filter: bugun | hafta | oy | yil
-   */
   async getKassaNazorati(filter: string = 'bugun', search?: string) {
     const dateRange = this.getDateRange(filter);
 
-    // Filterlangan tranzaksiyalar
     const transactions = await this.db.prisma.transaction.findMany({
       where: { createdAt: dateRange },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Umumiy qoldiq — barcha vaqtdagi INCOME - EXPENSE
-    const allTransactions = await this.db.prisma.transaction.findMany();
-    const umumiyQoldiq = allTransactions.reduce((sum, t) => {
-      const amount = Number(t.amount);
-      return t.type === TransactionType.INCOME ? sum + amount : sum - amount;
+    const allTx = await this.db.prisma.transaction.findMany();
+    const umumiyQoldiq = allTx.reduce((sum, t) => {
+      const a = Number(t.amount);
+      return t.type === TransactionType.INCOME ? sum + a : sum - a;
     }, 0);
 
-    // Filterlangan kirim / chiqim
     const jamiKirim = transactions
       .filter((t) => t.type === TransactionType.INCOME)
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -218,17 +219,18 @@ export class KassaService {
       .filter((t) => t.type === TransactionType.EXPENSE)
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    // Tarixiy harakatlar — search bilan filterlash
     let harakatlar = transactions.map((t) => ({
       id: t.id,
       sana: t.createdAt,
+      createdAt: t.createdAt,
       izoh: t.description,
+      description: t.description,
       turi: t.type === TransactionType.INCOME ? 'KIRIM' : 'CHIQIM',
+      type: t.type === TransactionType.INCOME ? 'INCOME' : 'EXPENSE',
       miqdor: Number(t.amount),
-      amal:
-        t.type === TransactionType.INCOME
-          ? ('KIRIM' as const)
-          : ('CHIQIM' as const),
+      summa: Number(t.amount),
+      amount: Number(t.amount),
+      amal: t.type === TransactionType.INCOME ? 'KIRIM' : 'CHIQIM',
     }));
 
     if (search) {
@@ -241,76 +243,57 @@ export class KassaService {
 
     return {
       umumiyQoldiq,
+      balance: umumiyQoldiq,
       jamiKirim,
+      totalIncome: jamiKirim,
       jamiChiqim,
+      totalExpense: jamiChiqim,
       filter,
       tarixiyHarakatlar: harakatlar,
+      transactions: harakatlar,
     };
   }
 
-  // ─── POST /kassa ─────────────────────────────────────────────────────────────
-  /**
-   * Yangi kirim yoki chiqim qo'shish
-   */
   async createKassaHarakat(dto: CreateKassaHarakatDto) {
-    const type =
-      dto.amalTuri === AmalTuri.KIRIM
-        ? TransactionType.INCOME
-        : TransactionType.EXPENSE;
+    const type = this.resolveType(dto);
+    const summa = Number(dto.summa ?? dto.amount ?? 0);
+    const izoh = dto.izoh || dto.description || '';
 
     const transaction = await this.db.prisma.transaction.create({
-      data: {
-        amount: dto.summa,
-        description: dto.izoh,
-        type,
-      },
+      data: { amount: summa, description: izoh, type },
     });
 
     return {
       success: true,
       message:
-        dto.amalTuri === AmalTuri.KIRIM
+        type === TransactionType.INCOME
           ? "Kirim muvaffaqiyatli qo'shildi"
           : "Chiqim muvaffaqiyatli qo'shildi",
       data: {
         id: transaction.id,
         summa: Number(transaction.amount),
+        amount: Number(transaction.amount),
         izoh: transaction.description,
-        turi: dto.amalTuri,
+        description: transaction.description,
+        turi: type === TransactionType.INCOME ? 'KIRIM' : 'CHIQIM',
+        type: type === TransactionType.INCOME ? 'INCOME' : 'EXPENSE',
         sana: transaction.createdAt,
+        createdAt: transaction.createdAt,
       },
     };
   }
 
-  // ─── DELETE /kassa/:id ───────────────────────────────────────────────────────
-  /**
-   * Tranzaksiyani o'chirish
-   */
   async deleteKassaHarakat(id: string) {
     const existing = await this.db.prisma.transaction.findUnique({
       where: { id },
     });
-
-    if (!existing) {
-      throw new NotFoundException(`Tranzaksiya topilmadi: ${id}`);
-    }
-
+    if (!existing) throw new NotFoundException(`Tranzaksiya topilmadi: ${id}`);
     await this.db.prisma.transaction.delete({ where: { id } });
-
-    return {
-      success: true,
-      message: "Tranzaksiya muvaffaqiyatli o'chirildi",
-    };
+    return { success: true, message: "Tranzaksiya muvaffaqiyatli o'chirildi" };
   }
 
-  // ─── GET /kassa/statistika ───────────────────────────────────────────────────
-  /**
-   * KIRIM, CHIQIM alohida statistika + sof foyda
-   * Filter: bugun | hafta | oy | yil
-   */
   async getKassaStatistika(filter: string = 'bugun') {
     const dateRange = this.getDateRange(filter);
-
     const [kirimlar, chiqimlar] = await Promise.all([
       this.db.prisma.transaction.findMany({
         where: { type: TransactionType.INCOME, createdAt: dateRange },
@@ -322,19 +305,14 @@ export class KassaService {
 
     const kirimJami = kirimlar.reduce((sum, t) => sum + Number(t.amount), 0);
     const chiqimJami = chiqimlar.reduce((sum, t) => sum + Number(t.amount), 0);
-    const sofFoyda = kirimJami - chiqimJami;
 
     return {
       filter,
-      kirim: {
-        summa: kirimJami,
-        tranzaksiyalarSoni: kirimlar.length,
-      },
-      chiqim: {
-        summa: chiqimJami,
-        tranzaksiyalarSoni: chiqimlar.length,
-      },
-      sofFoyda,
+      kirim: { summa: kirimJami, tranzaksiyalarSoni: kirimlar.length },
+      chiqim: { summa: chiqimJami, tranzaksiyalarSoni: chiqimlar.length },
+      totalIncome: kirimJami,
+      totalExpense: chiqimJami,
+      sofFoyda: kirimJami - chiqimJami,
       jami: kirimJami + chiqimJami,
     };
   }
